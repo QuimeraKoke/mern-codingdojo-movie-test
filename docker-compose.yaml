@@ -1,0 +1,44 @@
+version: "3"
+services:
+
+  web:
+    build:
+      context: ./frontend-app
+      dockerfile: Dockerfile.dev
+    ports:
+      -  3000:3000
+    volumes:
+      -  ./frontend-app/src:/usr/app/src
+      -  ./frontend-app/public:/usr/app/public
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ./backend-app
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3030:3030
+      - 5555:5555
+    env_file:
+      - ./backend-app/.env
+    volumes:
+      - ./backend-app/src:/usr/app/src
+    depends_on:
+      - db
+  db:
+    restart: unless-stopped
+    image: 'bitnami/mongodb:latest'
+    environment:
+        - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
+        - MONGODB_REPLICA_SET_MODE=primary
+        - MONGODB_ROOT_USER=mernuser
+        - MONGODB_ROOT_PASSWORD=P4sSw0rD
+        - MONGODB_REPLICA_SET_KEY=P4sSw0rD
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data/db
+
+volumes:
+  mongo:
